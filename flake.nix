@@ -59,6 +59,7 @@
         imports = [
           ./dev/shell.nix
           ./dev/treefmt.nix
+          ./terraform/shell.nix
         ];
 
         perSystem = { config, inputs', lib, pkgs, self', system, ... }:
@@ -66,10 +67,6 @@
             defaultPlatform = pkgs.stdenv.hostPlatform.system == "x86_64-linux";
           in
           {
-            imports = [
-              ./terraform/shell.nix
-            ];
-
             checks =
               let
                 darwinConfigurations = lib.mapAttrs' (name: config: lib.nameValuePair name config.config.system.build.toplevel) ((lib.filterAttrs (_: config: config.pkgs.system == system)) self.darwinConfigurations);
