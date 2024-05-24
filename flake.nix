@@ -57,6 +57,7 @@
         systems = [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ];
 
         imports = [
+          ./dev/shell.nix
           ./dev/treefmt.nix
         ];
 
@@ -66,7 +67,6 @@
           in
           {
             imports = [
-              ./dev/shell.nix
               ./terraform/shell.nix
             ];
 
