@@ -63,41 +63,39 @@
         ];
 
         perSystem = { config, inputs', lib, pkgs, self', system, ... }:
-          let
-            defaultPlatform = pkgs.stdenv.hostPlatform.system == "x86_64-linux";
-          in
           {
             checks =
               let
                 darwinConfigurations = lib.mapAttrs' (name: config: lib.nameValuePair name config.config.system.build.toplevel) ((lib.filterAttrs (_: config: config.pkgs.system == system)) self.darwinConfigurations);
                 devShells = lib.mapAttrs' (n: lib.nameValuePair "devShell-${n}") self'.devShells;
                 nixosConfigurations = lib.mapAttrs' (name: config: lib.nameValuePair "nixos-${name}" config.config.system.build.toplevel) ((lib.filterAttrs (_: config: config.pkgs.system == system)) self.nixosConfigurations);
-                packages = lib.mapAttrs' (n: lib.nameValuePair "package-${n}") self'.packages;
               in
-              darwinConfigurations // devShells // { inherit (self') formatter; } // nixosConfigurations // packages
-              // pkgs.lib.optionalAttrs defaultPlatform {
-                nixosTests-buildbot = pkgs.nixosTests.buildbot;
-                nixosTests-buildbot-nix-master = inputs'.buildbot-nix.checks.master;
-                nixosTests-buildbot-nix-worker = inputs'.buildbot-nix.checks.worker;
-                nixosTests-hydra = pkgs.nixosTests.hydra.hydra_unstable;
-              };
+              darwinConfigurations // devShells // { inherit (self') formatter; } // nixosConfigurations
+              // pkgs.lib.optionalAttrs (system == "x86_64-linux")
+                {
+                  inherit (self'.packages) pages;
+                  nixpkgs-update-supervisor-test = pkgs.callPackage ./hosts/build02/supervisor_test.nix { };
+                  editorconfig = pkgs.runCommand "editorconfig"
+                    {
+                      buildInputs = [ pkgs.editorconfig-checker ];
+                    } ''
+                    cd ${self}
+                    editorconfig-checker
+                    touch $out
+                  '';
+                  nixosTests-buildbot = pkgs.nixosTests.buildbot;
+                  nixosTests-buildbot-nix-master = inputs'.buildbot-nix.checks.master;
+                  nixosTests-buildbot-nix-worker = inputs'.buildbot-nix.checks.worker;
+                  nixosTests-hydra = pkgs.nixosTests.hydra.hydra_unstable;
+                };
 
-            packages = pkgs.lib.optionalAttrs defaultPlatform {
-              nixpkgs-update-supervisor-test = pkgs.callPackage ./hosts/build02/supervisor_test.nix { };
+            packages = {
               pages = pkgs.runCommand "pages"
                 {
                   buildInputs = [ config.devShells.mkdocs.nativeBuildInputs ];
                 } ''
                 cd ${self}
                 mkdocs build --strict --site-dir $out
-              '';
-              editorconfig = pkgs.runCommand "editorconfig"
-                {
-                  buildInputs = [ pkgs.editorconfig-checker ];
-                } ''
-                cd ${self}
-                editorconfig-checker
-                touch $out
               '';
             };
           };
