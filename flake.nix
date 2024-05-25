@@ -59,10 +59,11 @@
         imports = [
           ./dev/shell.nix
           ./dev/treefmt.nix
+          ./docs/pages.nix
           ./terraform/shell.nix
         ];
 
-        perSystem = { config, inputs', lib, pkgs, self', system, ... }:
+        perSystem = { inputs', lib, pkgs, self', system, ... }:
           {
             checks =
               let
@@ -88,16 +89,6 @@
                   nixosTests-buildbot-nix-worker = inputs'.buildbot-nix.checks.worker;
                   nixosTests-hydra = pkgs.nixosTests.hydra.hydra_unstable;
                 };
-
-            packages = {
-              pages = pkgs.runCommand "pages"
-                {
-                  buildInputs = [ config.devShells.mkdocs.nativeBuildInputs ];
-                } ''
-                cd ${self}
-                mkdocs build --strict --site-dir $out
-              '';
-            };
           };
 
         flake.darwinConfigurations =
