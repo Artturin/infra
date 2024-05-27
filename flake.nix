@@ -111,7 +111,8 @@
 
         flake.darwinConfigurations =
           let
-            inherit (self.lib) darwinSystem;
+            darwinSystem = args:
+              inputs.nix-darwin.lib.darwinSystem ({ specialArgs = { inherit inputs; }; } // args);
           in
           {
             darwin01 = darwinSystem {
@@ -130,7 +131,8 @@
 
         flake.nixosConfigurations =
           let
-            inherit (self.lib) nixosSystem;
+            nixosSystem = args:
+              inputs.nixpkgs.lib.nixosSystem ({ specialArgs = { inherit inputs; }; } // args);
           in
           {
             build01 = nixosSystem {
@@ -180,10 +182,5 @@
           remote-builder = ./modules/nixos/remote-builder.nix;
           watch-store = ./modules/nixos/watch-store.nix;
         };
-
-        flake.lib.darwinSystem = args:
-          inputs.nix-darwin.lib.darwinSystem ({ specialArgs = { inherit inputs; }; } // args);
-        flake.lib.nixosSystem = args:
-          inputs.nixpkgs.lib.nixosSystem ({ specialArgs = { inherit inputs; }; } // args);
       };
 }
