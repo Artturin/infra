@@ -57,7 +57,7 @@
         systems = [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ];
 
         imports = [
-          inputs.treefmt-nix.flakeModule
+          ./dev/treefmt.nix
         ];
 
         perSystem = { config, inputs', lib, pkgs, self', system, ... }:
@@ -69,10 +69,6 @@
               ./dev/shell.nix
               ./terraform/shell.nix
             ];
-            treefmt = {
-              flakeCheck = defaultPlatform;
-              imports = [ ./dev/treefmt.nix ];
-            };
 
             checks =
               let
